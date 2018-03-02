@@ -241,7 +241,8 @@ class MainFrame(wx.Frame):
     def onSendMessage(self,event):
         sizer = self.RecordView.GetSizer()
         messageData = self.InputArea.GetValue()
-        pub.sendMessage("SEND",message = messageData)
+        wx.CallAfter(pub.sendMessage,'SEND',message = messageData)
+        # pub.sendMessage('SEND',message = messageData)
         sizer.Add(message(self.RecordView,messageData),0,wx.ALIGN_RIGHT|wx.ALL,10)
         self.Layout()
 

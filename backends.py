@@ -14,27 +14,23 @@ from threading import Thread
 class Sender(object):
     def __init__(self, parent):
         self.parent = parent
-        self.Socket_init()
-        while True:
-            pub.subscribe(self.Send_message, 'SEND')
-        pass
+        self.dest_addr = (self.parent.des_ip, self.parent.des_port)
+        self.socket = socket()
+        pub.subscribe(self.Send_message, 'SEND')
+        time.sleep(86400)
 
-    def Socket_init(self):
-        dest_addr = (self.parent.des_ip, self.parent.des_port)
-
+    def Send_message(self, message):
         self.socket = socket()
         while True:
             try:
-                self.socket.connect(dest_addr)
+                self.socket.connect(self.dest_addr)
                 print 'succed'
                 break
-            except error:
+            except error,e:
+                print e
                 time.sleep(1)
-
-    def Send_message(self,message):
         self.socket.sendall(message)
-
-    pass
+        self.socket.close()
 
 class Listener(object):
     def __init__(self, parent):
@@ -44,7 +40,6 @@ class Listener(object):
         while True:
             self.conn,addr = self.socket.accept()
             self.Recv()
-        pass
 
     def Socket_init(self):
         listen_addr = ('' ,self.parent.local_port)
@@ -58,9 +53,9 @@ class Listener(object):
 
     def Recv(self):
         self.new_mess = self.conn.recv(1024)
-        pub.sendMessage('RECEIVE',message = self.new_mess)
+        wx.CallAfter(pub.sendMessage,'RECEIVE',message = self.new_mess)
+        # pub.sendMessage('RECEIVE',message = self.new_mess)
         self.conn.close()
-    pass
 
 class App(object):
     def __init__(self,des_ip = '127.0.0.1',local_port = 22000, des_port = 22000):
@@ -79,10 +74,3 @@ class App(object):
         listener = Thread(target=Listener,args=(self,))
         sender.start()
         listener.start()
-
-def main():
-    app = App()
-
-
-if __name__ == '__main__':
-    main()
