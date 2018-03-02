@@ -16,19 +16,15 @@ from wx.lib.expando import ExpandoTextCtrl, EVT_ETC_LAYOUT_NEEDED
 ## Class message
 ###########################################################################
 
-class message(wx.Panel):
+class messagePanel(wx.Panel):
 
     def __init__(self, parent, messageData):
-        #自适应消息宽度
-        size = parent.GetSize()
-        dataLen = len(messageData)
-        dataSize = dataLen * 9
-        if dataSize > size[0] * 0.5:
-            width = size[0] * 0.5
-        else:
-            width = dataLen * 9
 
-        wx.Panel.__init__(self, parent, id=wx.ID_ANY, pos=wx.DefaultPosition , size = ( width, -1),
+
+        parent_width,parent_height = parent.GetSize()
+
+
+        wx.Panel.__init__(self, parent, id=wx.ID_ANY, pos=wx.DefaultPosition , size = (parent_width * 0.4 , -1),
                           style=wx.TAB_TRAVERSAL)
 
         self.SetForegroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT))
@@ -36,15 +32,17 @@ class message(wx.Panel):
 
         message_sizer = wx.BoxSizer(wx.VERTICAL)
 
-        self.m_textCtrl7 = ExpandoTextCtrl(self, wx.ID_ANY, value=messageData, style = wx.TE_MULTILINE | wx.NO_BORDER | wx.TE_READONLY)
+        self.m_textCtrl7 = ExpandoTextCtrl(self, wx.ID_ANY, value=messageData, style = wx.TE_MULTILINE | wx.NO_BORDER | wx.TE_READONLY )
         self.m_textCtrl7.SetForegroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT))
         self.m_textCtrl7.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_BACKGROUND))
         #self.m_textCtrl7.Enable(False)
 
         message_sizer.Add(self.m_textCtrl7, 1, wx.ALL | wx.EXPAND, 7)
+        print self.GetBestSize().Get()
 
         self.SetSizer(message_sizer)
         self.Sizer.Fit(self)
+
         self.Layout()
 
 
@@ -131,8 +129,20 @@ class SettingDialog(wx.Dialog):
 
         self.Centre(wx.BOTH)
 
+        # Connect Events
+        self.confirm.Bind(wx.EVT_BUTTON, self.onConfirm)
+        self.drop.Bind(wx.EVT_BUTTON, self.onDrop)
+
     def __del__(self):
         pass
+
+    # Virtual event handlers, overide them in your derived class
+    def onConfirm(self, event):
+        event.Skip()
+
+    def onDrop(self, event):
+        self.Close()
+
 
 ###########################################################################
 ## Class MainFrame
@@ -235,15 +245,17 @@ class MainFrame(wx.Frame):
     def onReceiveMessage(self,message):
         sizer = self.RecordView.GetSizer()
         messageData = message
-        button = wx.Button(self.RecordView, label=messageData)
-        sizer.Add(button, 0, wx.ALL, 10)
+        sizer.Add(messagePanel(self.RecordView, messageData), 0, wx.ALIGN_LEFT | wx.ALL, 10)
+        sizer.Layout()
 
     def onSendMessage(self,event):
         sizer = self.RecordView.GetSizer()
         messageData = self.InputArea.GetValue()
-        wx.CallAfter(pub.sendMessage,'SEND',message = messageData)
-        # pub.sendMessage('SEND',message = messageData)
-        sizer.Add(message(self.RecordView,messageData),0,wx.ALIGN_RIGHT|wx.ALL,10)
+
+        pub.sendMessage("SEND",message = messageData)
+
+        self.onReceiveMessage('nice to meet you')
+        sizer.Add(messagePanel(self.RecordView, messageData),0,wx.ALIGN_RIGHT|wx.ALL,10)
         self.Layout()
 
 
