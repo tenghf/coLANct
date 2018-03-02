@@ -1,16 +1,15 @@
 # !/usr/bin/python
 # -*- coding: UTF-8 -*-
 
-from socket import *
-from threading import Thread
 import thread
 import os
 import time
 import sys
 import curses
-import Main
-from wx.lib.pubsub import pub
 import wx
+from wx.lib.pubsub import pub
+from socket import *
+from threading import Thread
 
 class Sender(object):
     def __init__(self, parent):
@@ -38,9 +37,8 @@ class Sender(object):
     pass
 
 class Listener(object):
-    def __init__(self, parent, frame):
+    def __init__(self, parent):
         self.parent = parent
-        self.frame = frame
         self.Socket_init()
         self.count = 0
         while True:
@@ -54,7 +52,7 @@ class Listener(object):
         self.socket = socket()
         try:
             self.socket.bind(listen_addr)
-        except socket.error:
+        except:
             self.socket.close()
         self.socket.listen(10)
 
@@ -65,7 +63,7 @@ class Listener(object):
     pass
 
 class App(object):
-    def __init__(self,des_ip,local_port,des_port):
+    def __init__(self,des_ip = '127.0.0.1',local_port = 22000, des_port = 22000):
         self.message = []
         self.new_message = ''
         self.count = 0
@@ -74,24 +72,16 @@ class App(object):
         self.local_port = local_port
         self.des_port = des_port
 
-        self.app = wx.App()
-        self.mainFrame = Main.MainFrame(self)
-        self.mainFrame.Show()
-
         self.Thread_init()
-
-        self.app.MainLoop()  
-
 
     def Thread_init(self):
         sender = Thread(target=Sender,args=(self,))
-        listener = Thread(target=Listener,args=(self, self.mainFrame))
+        listener = Thread(target=Listener,args=(self,))
         sender.start()
         listener.start()
 
-
 def main():
-    app = App('127.0.0.1',int(sys.argv[1]),int(sys.argv[2]))
+    app = App()
 
 
 if __name__ == '__main__':
