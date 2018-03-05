@@ -61,10 +61,14 @@ class Server(object):
         self.accept = True
         self.messager = parent.messager
         self.parent = parent
-        self.address = ('127.0.0.1',12345)
         
     def listen(self):
-        self.address = ('127.0.0.1',self.parent.address[1])
+        self.address = ('0.0.0.0' ,self.parent.address[1])
+
+        ipname = socket.getfqdn(socket.gethostname())
+        myaddress = socket.gethostbyname(ipname)
+        print myaddress
+
         self.listen_sk = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.listen_sk.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.listen_sk.bind(self.address)
@@ -157,6 +161,7 @@ class Backend(object):
                 info('receive signal connect')
 
                 if self.getConnectState() == False:
+
                     try:
                         self.client.connect()
                         self.messager.b2f_signal.put('ok')
